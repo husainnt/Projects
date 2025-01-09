@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css?family=Heebo:300&display=swap');
+@import url("https://fonts.googleapis.com/css?family=Heebo:300&display=swap");
 
 * {
   box-sizing: border-box;
@@ -28,7 +28,7 @@ html.dark {
 }
 
 body {
-  font-family: 'Heebo', sans-serif;
+  font-family: "Heebo", sans-serif;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -63,7 +63,6 @@ body {
   align-items: center;
   animation: float 4s ease-in-out infinite;
 }
-
 .clock {
   position: relative;
   width: 250px;
@@ -72,7 +71,6 @@ body {
   border-radius: 50%;
   box-shadow: 0 8px 30px var(--glow-color), inset 0 4px 10px rgba(0, 0, 0, 0.2);
   transform: rotateX(20deg) rotateY(20deg);
-  animation: rotate 20s linear infinite;
 }
 
 .needle {
@@ -135,9 +133,9 @@ body {
   font-size: 12px;
 }
 
-
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
