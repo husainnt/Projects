@@ -1,20 +1,12 @@
 #include <bits/stdc++.h>
 using namespace std;
-#define RESET "\033[0m"
-#define RED "\033[31m"
-#define GREEN "\033[32m"
-#define YELLOW "\033[33m"
-#define BLUE "\033[34m"
-#define MAGENTA "\033[35m"
-#define CYAN "\033[36m"
-#define WHITE "\033[37m"
+
 class TreeNode
 {
 public:
     char data;
     int freq;
-    TreeNode *left;
-    TreeNode *right;
+    TreeNode *left, *right;
 
     TreeNode(char d, int f)
     {
@@ -24,6 +16,7 @@ public:
         this->right = nullptr;
     }
 };
+
 class Compare
 {
 public:
@@ -38,10 +31,12 @@ class Huffman
 public:
     unordered_map<char, string> E_map;
     unordered_map<string, char> D_map;
+
     void generateCodes(TreeNode *root, string code);
     void Encode(const string &inp_Fname, const string &op_Fname);
     void Decode(const string &inp_Fname, const string &op_Fname);
 };
+
 void Huffman::generateCodes(TreeNode *root, string code)
 {
     if (!root)
@@ -55,6 +50,7 @@ void Huffman::generateCodes(TreeNode *root, string code)
     generateCodes(root->left, code + "0");
     generateCodes(root->right, code + "1");
 }
+
 void Huffman::Encode(const string &inp_Fname, const string &op_Fname)
 {
     ifstream input(inp_Fname, ios::binary);
@@ -65,17 +61,19 @@ void Huffman::Encode(const string &inp_Fname, const string &op_Fname)
         cerr << "Error: Unable to open files." << endl;
         return;
     }
+
     input.seekg(0, ios::end);
     int originalSize = input.tellg();
     input.seekg(0, ios::beg);
+
     unordered_map<char, int> freq;
     char ch;
     while (input.get(ch))
-    {
         freq[ch]++;
-    }
+
     input.clear();
     input.seekg(0);
+
     priority_queue<TreeNode *, vector<TreeNode *>, Compare> pq;
     for (auto &pair : freq)
     {
@@ -93,8 +91,10 @@ void Huffman::Encode(const string &inp_Fname, const string &op_Fname)
         parent->right = right;
         pq.push(parent);
     }
+
     TreeNode *root = pq.top();
     generateCodes(root, "");
+
     int freqSize = freq.size();
     output.write((char *)&freqSize, sizeof(int));
     for (auto &pair : E_map)
@@ -104,16 +104,17 @@ void Huffman::Encode(const string &inp_Fname, const string &op_Fname)
         output.write((char *)&codeLength, sizeof(int));
         output.write(pair.second.c_str(), codeLength);
     }
+
     string encodedData = "";
     while (input.get(ch))
     {
         encodedData += E_map[ch];
     }
+
     int extraBits = (8 - (encodedData.size() % 8)) % 8;
     for (int i = 0; i < extraBits; i++)
-    {
         encodedData += "0";
-    }
+
     output.write((char *)&extraBits, sizeof(int));
     for (size_t i = 0; i < encodedData.size(); i += 8)
     {
@@ -121,6 +122,7 @@ void Huffman::Encode(const string &inp_Fname, const string &op_Fname)
         char byteChar = stoi(byte, nullptr, 2);
         output.write(&byteChar, sizeof(char));
     }
+
     output.close();
     input.close();
 
@@ -128,16 +130,17 @@ void Huffman::Encode(const string &inp_Fname, const string &op_Fname)
     compressedFile.seekg(0, ios::end);
     int compressedSize = compressedFile.tellg();
     compressedFile.close();
+
     double compressionRatio = static_cast<double>(compressedSize) / originalSize;
     double compressionPercentage = (1.0 - compressionRatio) * 100;
 
-    cout << "\nCompression Analysis:" << endl;
-    cout << "Original File Size: " << originalSize << " bytes" << endl;
-    cout << "Compressed File Size: " << compressedSize << " bytes" << endl;
-    cout << fixed << setprecision(2);
-    cout << "Compression Ratio: " << compressionRatio << endl;
-    cout << "Compression Percentage: " << compressionPercentage << "%" << endl;
+    cout << "Compression Successful\n";
+    cout << "Original Size: " << originalSize << " bytes\n";
+    cout << "Compressed Size: " << compressedSize << " bytes\n";
+    cout << "Compression Ratio: " << compressionRatio << "\n";
+    cout << "Compression Percentage: " << compressionPercentage << "%\n";
 }
+
 void Huffman::Decode(const string &inp_Fname, const string &op_Fname)
 {
     ifstream input(inp_Fname, ios::binary);
@@ -148,6 +151,7 @@ void Huffman::Decode(const string &inp_Fname, const string &op_Fname)
         cerr << "Error: Unable to open files." << endl;
         return;
     }
+
     int uniqueChars;
     input.read((char *)&uniqueChars, sizeof(int));
     D_map.clear();
@@ -163,6 +167,7 @@ void Huffman::Decode(const string &inp_Fname, const string &op_Fname)
         D_map[string(code)] = character;
         delete[] code;
     }
+
     int extraBits;
     input.read((char *)&extraBits, sizeof(int));
     string binaryData = "";
@@ -172,6 +177,7 @@ void Huffman::Decode(const string &inp_Fname, const string &op_Fname)
         binaryData += bitset<8>(static_cast<unsigned char>(byte)).to_string();
     }
     binaryData = binaryData.substr(0, binaryData.size() - extraBits);
+
     string code = "";
     for (char bit : binaryData)
     {
@@ -185,47 +191,36 @@ void Huffman::Decode(const string &inp_Fname, const string &op_Fname)
 
     input.close();
     output.close();
+    cout << "Decompression Successful\n";
 }
 
-int main()
+int main(int argc, char *argv[])
 {
-    int n;
-    string inp_Fname, op_Fname;
-    Huffman h;
-
-    do
+    if (argc != 4)
     {
+        cerr << "Usage: " << argv[0] << " <input_file> <output_file> <compress/decompress>\n";
+        return 1;
+    }
 
-        cout << CYAN << "\nHuffman Coding Menu:" << RESET;
-        cout << YELLOW << "\n1. Compress a File" << RESET;
-        cout << GREEN << "\n2. Decompress a File" << RESET;
-        cout << MAGENTA << "\n3. Exit" << RESET;
-        cout << BLUE << "\nEnter your choice: " << RESET;
-        cin >> n;
+    string inputFile = argv[1];
+    string outputFile = argv[2];
+    string mode = argv[3];
 
-        switch (n)
-        {
-        case 1:
-            cout << BLUE << "Enter input file name: " << RESET;
-            cin >> inp_Fname;
-            cout << BLUE << "Provide a name for the file to be saved as output: " << RESET;
-            cin >> op_Fname;
-            h.Encode(inp_Fname, op_Fname);
-            break;
-        case 2:
-            cout << BLUE << "Enter compressed file name: " << RESET;
-            cin >> inp_Fname;
-            cout << BLUE << "Provide a name for the file to be saved as output: " << RESET;
-            cin >> op_Fname;
-            h.Decode(inp_Fname, op_Fname);
-            break;
-        case 3:
-            cout << RED << "Exiting program. Goodbye!" << RESET << endl;
-            break;
-        default:
-            cout << RED << "Invalid choice. Please try again." << RESET << endl;
-        }
-    } while (n != 3);
+    Huffman huffman;
+
+    if (mode == "compress")
+    {
+        huffman.Encode(inputFile, outputFile);
+    }
+    else if (mode == "decompress")
+    {
+        huffman.Decode(inputFile, outputFile);
+    }
+    else
+    {
+        cerr << "Invalid mode. Use 'compress' or 'decompress'.\n";
+        return 1;
+    }
 
     return 0;
 }
